@@ -15,7 +15,7 @@ import {
 } from '../errors/diff-error';
 import { specWatcher } from '../globals';
 import { watchFlag } from '../flags';
-import { validationFlags, parse, convertToOldAPI } from '../parser';
+import { validationFlags, parse, convertToOldAPI, SchemaValidationStatus } from '../parser';
 
 import type { SpecWatcherParams } from '../globals';
 
@@ -217,11 +217,11 @@ export default class Diff extends Command {
  */
 function genericOutput(diffOutput: AsyncAPIDiff, outputType: string) {
   switch (outputType) {
-  case 'breaking': return diffOutput.breaking();
-  case 'non-breaking': return diffOutput.nonBreaking();
-  case 'unclassified': return diffOutput.unclassified();
-  case 'all': return diffOutput.getOutput();
-  default: return `The output type ${outputType} is not supported at the moment.`;
+    case 'breaking': return diffOutput.breaking();
+    case 'non-breaking': return diffOutput.nonBreaking();
+    case 'unclassified': return diffOutput.unclassified();
+    case 'all': return diffOutput.getOutput();
+    default: return `The output type ${outputType} is not supported at the moment.`;
   }
 }
 
@@ -229,7 +229,7 @@ async function parseDocuments(command: Command, firstDocument: Specification, se
   const { document: newFirstDocumentParsed, status: firstDocumentStatus } = await parse(command, firstDocument, flags);
   const { document: newSecondDocumentParsed, status: secondDocumentStatus } = await parse(command, secondDocument, flags);
 
-  if (!newFirstDocumentParsed || !newSecondDocumentParsed || firstDocumentStatus === 'invalid' || secondDocumentStatus === 'invalid') {
+  if (!newFirstDocumentParsed || !newSecondDocumentParsed || firstDocumentStatus === SchemaValidationStatus.Invalid || secondDocumentStatus === SchemaValidationStatus.Invalid) {
     return;
   }
 

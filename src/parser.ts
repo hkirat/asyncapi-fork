@@ -14,6 +14,11 @@ import type { Specification } from './models/SpecificationFile';
 
 export type SeveritytKind = 'error' | 'warn' | 'info' | 'hint';
 
+export enum SchemaValidationStatus {
+  Valid,
+  Invalid
+}
+
 export { convertToOldAPI };
 
 const parser = new Parser({
@@ -70,7 +75,7 @@ export async function parse(command: Command, specFile: Specification, options: 
   return { document, diagnostics, status };
 }
 
-function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: Specification, options: ValidateOptions = {}): 'valid' | 'invalid' {
+function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: Specification, options: ValidateOptions = {}): SchemaValidationStatus {
   const logDiagnostics = options['log-diagnostics'];
   const failSeverity = options['fail-severity'] ?? 'error';
   const diagnosticsFormat = options['diagnostics-format'] ?? 'stylish';
@@ -82,7 +87,7 @@ function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: S
         command.logToStderr(`\n${sourceString} and/or referenced documents have governance issues.`);
         command.logToStderr(formatOutput(diagnostics, diagnosticsFormat, failSeverity));
       }
-      return 'invalid';
+      return SchemaValidationStatus.Invalid
     }
 
     if (logDiagnostics) {
@@ -93,20 +98,20 @@ function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: S
     command.log(`\n${sourceString} is valid! ${sourceString} and referenced documents don't have governance issues.`);
   }
 
-  return 'valid';
+  return SchemaValidationStatus.Valid;
 }
 
 export function formatOutput(diagnostics: Diagnostic[], format: `${OutputFormat}`, failSeverity: SeveritytKind) {
   const options = { failSeverity: getDiagnosticSeverity(failSeverity) };
   switch (format) {
-  case 'stylish': return stylish(diagnostics, options);
-  case 'json': return json(diagnostics, options);
-  case 'junit': return junit(diagnostics, options);
-  case 'html': return html(diagnostics, options);
-  case 'text': return text(diagnostics, options);
-  case 'teamcity': return teamcity(diagnostics, options);
-  case 'pretty': return pretty(diagnostics, options);
-  default: return stylish(diagnostics, options);
+    case 'stylish': return stylish(diagnostics, options);
+    case 'json': return json(diagnostics, options);
+    case 'junit': return junit(diagnostics, options);
+    case 'html': return html(diagnostics, options);
+    case 'text': return text(diagnostics, options);
+    case 'teamcity': return teamcity(diagnostics, options);
+    case 'pretty': return pretty(diagnostics, options);
+    default: return stylish(diagnostics, options);
   }
 }
 
