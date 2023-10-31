@@ -61,6 +61,7 @@ interface ValidateOptions {
 
 export async function validate(command: Command, specFile: Specification, options: ValidateOptions = {}) {
   const diagnostics = await parser.validate(specFile.text(), { source: specFile.getSource() });
+  console.log(diagnostics);
   return logDiagnostics(diagnostics, command, specFile, options);
 }
 
@@ -75,6 +76,7 @@ function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: S
   const failSeverity = options['fail-severity'] ?? 'error';
   const diagnosticsFormat = options['diagnostics-format'] ?? 'stylish';
 
+  console.log("has fail severity " + hasFailSeverity(diagnostics, failSeverity));
   const sourceString = specFile.toSourceString();
   if (diagnostics.length) {
     if (hasFailSeverity(diagnostics, failSeverity)) {
@@ -99,14 +101,14 @@ function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: S
 export function formatOutput(diagnostics: Diagnostic[], format: `${OutputFormat}`, failSeverity: SeveritytKind) {
   const options = { failSeverity: getDiagnosticSeverity(failSeverity) };
   switch (format) {
-  case 'stylish': return stylish(diagnostics, options);
-  case 'json': return json(diagnostics, options);
-  case 'junit': return junit(diagnostics, options);
-  case 'html': return html(diagnostics, options);
-  case 'text': return text(diagnostics, options);
-  case 'teamcity': return teamcity(diagnostics, options);
-  case 'pretty': return pretty(diagnostics, options);
-  default: return stylish(diagnostics, options);
+    case 'stylish': return stylish(diagnostics, options);
+    case 'json': return json(diagnostics, options);
+    case 'junit': return junit(diagnostics, options);
+    case 'html': return html(diagnostics, options);
+    case 'text': return text(diagnostics, options);
+    case 'teamcity': return teamcity(diagnostics, options);
+    case 'pretty': return pretty(diagnostics, options);
+    default: return stylish(diagnostics, options);
   }
 }
 

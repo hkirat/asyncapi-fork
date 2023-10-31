@@ -20,7 +20,10 @@ export default class Validate extends Command {
   ];
 
   async run() {
+    console.log("inside the run function");
+
     const { args, flags } = await this.parse(Validate); //NOSONAR
+    console.log(flags);
     const filePath = args['spec-file'];
     const watchMode = flags.watch;
 
