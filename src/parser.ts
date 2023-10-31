@@ -14,6 +14,11 @@ import type { Specification } from './models/SpecificationFile';
 
 export type SeveritytKind = 'error' | 'warn' | 'info' | 'hint';
 
+export enum SchemaValidationStatus {
+  Valid,
+  Invalid
+}
+
 export { convertToOldAPI };
 
 const parser = new Parser({
@@ -61,7 +66,6 @@ interface ValidateOptions {
 
 export async function validate(command: Command, specFile: Specification, options: ValidateOptions = {}) {
   const diagnostics = await parser.validate(specFile.text(), { source: specFile.getSource() });
-  console.log(diagnostics);
   return logDiagnostics(diagnostics, command, specFile, options);
 }
 
@@ -71,12 +75,11 @@ export async function parse(command: Command, specFile: Specification, options: 
   return { document, diagnostics, status };
 }
 
-function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: Specification, options: ValidateOptions = {}): 'valid' | 'invalid' {
+function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: Specification, options: ValidateOptions = {}): SchemaValidationStatus {
   const logDiagnostics = options['log-diagnostics'];
   const failSeverity = options['fail-severity'] ?? 'error';
   const diagnosticsFormat = options['diagnostics-format'] ?? 'stylish';
 
-  console.log("has fail severity " + hasFailSeverity(diagnostics, failSeverity));
   const sourceString = specFile.toSourceString();
   if (diagnostics.length) {
     if (hasFailSeverity(diagnostics, failSeverity)) {
@@ -84,7 +87,7 @@ function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: S
         command.logToStderr(`\n${sourceString} and/or referenced documents have governance issues.`);
         command.logToStderr(formatOutput(diagnostics, diagnosticsFormat, failSeverity));
       }
-      return 'invalid';
+      return SchemaValidationStatus.Invalid
     }
 
     if (logDiagnostics) {
@@ -95,7 +98,7 @@ function logDiagnostics(diagnostics: Diagnostic[], command: Command, specFile: S
     command.log(`\n${sourceString} is valid! ${sourceString} and referenced documents don't have governance issues.`);
   }
 
-  return 'valid';
+  return SchemaValidationStatus.Valid;
 }
 
 export function formatOutput(diagnostics: Diagnostic[], format: `${OutputFormat}`, failSeverity: SeveritytKind) {

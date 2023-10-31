@@ -1,7 +1,7 @@
 import { Flags } from '@oclif/core';
 
 import Command from '../base';
-import { validate, validationFlags } from '../parser';
+import { SchemaValidationStatus, validate, validationFlags } from '../parser';
 import { load } from '../models/SpecificationFile';
 import { specWatcher } from '../globals';
 import { watchFlag } from '../flags';
@@ -32,6 +32,11 @@ export default class Validate extends Command {
       specWatcher({ spec: specFile, handler: this, handlerName: 'validate' });
     }
 
-    await validate(this, specFile, flags);
+
+    const response = await validate(this, specFile, flags);
+    if (response === SchemaValidationStatus.Invalid) {
+      this.exit(1);
+    }
   }
+
 }
